@@ -42,15 +42,16 @@ public class ReplyController {
   }
 
 
-  @PutMapping("/")
-  public Map<String, Object> modify(@RequestBody Reply reply) {
+  @PutMapping("{rno}")
+  public Map<String, Object> modify(@RequestBody Reply reply, @PathVariable Long rno) {
     replyService.modify(reply);
     return Map.of("result", true, "reply", reply);
   }
 
   @DeleteMapping("{rno}")
-  public ResponseEntity<Map<String, Object>> remove(@RequestBody Long rno) {
+  public ResponseEntity<Map<String, Object>> remove(@PathVariable Long rno) {
+    //PathVariable : URL 경로에 있는 rno 값 받아오기
     replyService.remove(rno);
-    return ResponseEntity.ok().body(Map.of("result", rno));
+    return ResponseEntity.ok().body(Map.of("result", true));
   }
 }

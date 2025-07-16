@@ -31,7 +31,7 @@ public class MemberController {
   public String login(Member member, HttpSession session, RedirectAttributes redirectAttributes) {
     log.info("{}", member);
     if(memberService.login(member.getId(), member.getPw())) {
-      session.setAttribute("member", member);
+      session.setAttribute("member", memberService.findById(member.getId()));
       return "redirect:/";
     }
     redirectAttributes.addFlashAttribute("msg", "로그인 실패");

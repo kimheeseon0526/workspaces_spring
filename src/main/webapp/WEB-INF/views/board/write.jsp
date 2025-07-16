@@ -172,17 +172,29 @@
 		});
 		
 
-		$("#writeForm").submit(function() {
-			event.preventDefault();
+		$("#writeForm").submit(function(e) {
+      e.preventDefault();
+      $(this).append($("<input>").attr({type: "hidden", name:"attachs[0].uuid", value:"test-uuid.png"}));
+      // const formData = new FormData(this);
+      // formData.append("attachs[0].uuid", "test-uuid.png") //postman 에서의 key, value
 			const data = [];
 			$(".attach-list li").each(function() {
 				data.push({...this.dataset});
 			});
-			console.log(JSON.stringify(data));
-			data.forEach((item, idx) => item.odr = idx);
-			//item의 odr 을 idx로 덮어쓰기
-			$("[name='encodedStr']").val(JSON.stringify(data));
-			this.submit();
+      console.log(data)
+
+      for(let d in data) {  //object 타입 객체 반복
+        for(let i in data[d]){  //그 안의 속성값
+          $(this).append($("<input>").attr({type: "hidden", name:`attachs[\${d}].\${i}`, value:data[d][i]}));
+          console.log(i, data[d][i]);
+          debugger;
+        }
+      }
+			// console.log(JSON.stringify(data));
+			// data.forEach((item, idx) => item.odr = idx);
+			// //item의 odr 을 idx로 덮어쓰기
+			// $("[name='encodedStr']").val(JSON.stringify(data));
+			$(this).off().submit(); //중복  호출 방지
 		})
 	})
 	</script>

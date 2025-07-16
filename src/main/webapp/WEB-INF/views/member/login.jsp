@@ -11,7 +11,7 @@
     <input name="id" value="qwe">
     <input type="password" name="pw" value="qwe">
     <button>로그인</button>
-    <p class="text-danger">4{msg}</p>
+    <p class="text-danger">${msg}</p>
 </form>
 </body>
 </html>

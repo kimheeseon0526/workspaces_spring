@@ -3,6 +3,11 @@ package com.levelupseon.demo3.controller;
 import com.levelupseon.demo3.domain.Attach;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,7 +36,7 @@ public class UploadController {
   }
 
   @PostMapping("upload")
-  @ResponseBody //응답 객체를 json으로
+  @ResponseBody //JSP나 HTML로 안 가고, 그냥 문자열이 출력
   public ResponseEntity<?> upload(List<MultipartFile> f1) throws IOException {
     f1.forEach( f -> log.info(f.getOriginalFilename()));
 
@@ -40,11 +47,11 @@ public class UploadController {
 
     for(MultipartFile part : f1) {
       if(part.getSize() == 0) {
-        continue;
+        continue; //빈파일이면 넘어감
       }
       Long fileSize =  part.getSize();
       String origin =  part.getOriginalFilename();
-      String contentType = part.getContentType();
+      String contentType = part.getContentType(); //image, png 등
 
       //ext 추출
       int idx = origin.lastIndexOf(".");
@@ -94,4 +101,40 @@ public class UploadController {
   private String genPath() {
     return new SimpleDateFormat("yyyy/MM/dd").format(new Date().getTime());
   }
+
+  @GetMapping("display")
+  public ResponseEntity<?> display(Attach attach) throws IOException {
+    File file = new File(UPLOAD_PATH + "/" + attach.getPath(), attach.getUuid());
+    if(!file.exists()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Type", Files.probeContentType(file.toPath()));
+    headers.add("Content-Length", String.valueOf(file.length()));
+    //응답 헤더 설정
+
+    Resource resource = new FileSystemResource(file);
+    return ResponseEntity.ok().headers(headers).body(resource);
+  }
+
+  @GetMapping("download")
+  public ResponseEntity<?> download(Attach attach) throws IOException {
+    File file = new File(UPLOAD_PATH + "/" + attach.getPath(), attach.getUuid());
+    if(!file.exists()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    headers.setContentLength(file.length());
+    headers.setContentDisposition(ContentDisposition.attachment().filename(URLEncoder.encode(attach.getOrigin(), "utf-8").replaceAll("]]+", "%20")).build());
+    //응답 헤더 설정
+
+    Resource resource = new FileSystemResource(file);
+    return ResponseEntity.ok().headers(headers).body(resource);
+  }
 }
+
+
+

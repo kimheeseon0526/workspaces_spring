@@ -148,6 +148,10 @@
 	</div>
 <%@ include file="../common/footer.jsp" %>
 	<script>
+		$.ajaxSetup({
+			contentType : 'application/json'
+		})
+
 		dayjs.extend(window.dayjs_plugin_relativeTime);
 		dayjs.locale('ko');
 		const dayForm = 'YYYY-MM-DD HH:mm:ss';
